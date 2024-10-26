@@ -1,0 +1,1 @@
+Booking.com scraper by Shokoufe Naseri and Jan Szczepanek. The parts we worked on are being sent separately as we chose scrapy as the basis for the whole project. A simple python file was chosen as the form of presentation, with comments attached directly to the code. Additionally, a zip file with the whole directory is being attached in case you want to run the scraper.

@@ -5,15 +5,10 @@
 
 import scrapy
 
-
-class BookingScraperItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
-
 class BookingItem(scrapy.Item):
     name = scrapy.Field()
     address = scrapy.Field()
+    city = scrapy.Field()
     rating = scrapy.Field()
     rating1 = scrapy.Field()
     rating2 = scrapy.Field()
