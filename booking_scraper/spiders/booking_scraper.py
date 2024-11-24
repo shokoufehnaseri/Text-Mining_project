@@ -20,7 +20,7 @@ from selenium.webdriver.support import expected_conditions as EC
 class BookingSpider(scrapy.Spider):
     name = 'booking' #we write this into cmd when we want to start the scraper
     allowed_domains = ['booking.com'] #self-explainatory
-    start_urls = ['https://www.booking.com/berlin', 'https://www.booking.com/osaka', 'https://www.booking.com/warsaw'] #booking has this wonderful feature with its structure - we could even automate this in the future to just type in the cities
+    start_urls = ['https://www.booking.com/berlin'] #booking has this wonderful feature with its structure - we could even automate this in the future to just type in the cities
     check = 0 #this variable will come in handy later
 #setup the driver
     def __init__(self, *args, **kwargs):
@@ -125,7 +125,7 @@ class BookingSpider(scrapy.Spider):
         prereg_rating = soup.find('div', class_='a3b8729ab1 d86cee9b25').get_text(strip=True)
         rating = re.search(r'(\d+\.\d+)', prereg_rating) #we remove text to get just the digits
         if rating: rating = rating.group(1) #if a match is found, the main rating is set as the stripped value
-        other_ratings = soup.find_all('div', class_='ccb65902b2 efcd70b4c4') # we get a list of ratings from the site. we have tried to get the ratings one by one but this has proven more effective
+        other_ratings = soup.find_all('div', class_='b817090550 a7cf1a6b1d') # we get a list of ratings from the site. we have tried to get the ratings one by one but this has proven more effective
 #the price part - a bit more complex, we have to find the table and then parse the table. for this, we had to use selenium, as bs4 does not really support xpaths
         find_element_by_xpath = lambda xpath: self.driver.find_element('xpath', xpath) # lambda function - it is not really useful and using it more than once caused the scraper to go crazy
         self.driver.get(response.url) #we plug selenium with the perticular hotels link
@@ -133,11 +133,30 @@ class BookingSpider(scrapy.Spider):
         price_raw = find_element_by_xpath("//tr[contains(@class,'js-rt-block-row e2e-hprt-table-row hprt-table-cheapest-block hprt-table-cheapest-block-fix js-hprt-table-cheapest-block')]//td[contains(@class,'')]//div[contains(@class,'hprt-price-block')]//div[contains(@class,'prco-wrapper bui-price-display prco-sr-default-assembly-wrapper')]//div//div//div[contains(@class,'bui-price-display__value prco-text-nowrap-helper prco-inline-block-maker-helper prco-f-font-heading')]//span[@class='prco-valign-middle-helper']")
         price_reg = re.search(r'\d+', price_raw.text) #we remove 'zł'
         if price_reg: price = price_reg.group() #the same deal as with the rating. For some reason it works this way, i'm not sure how to explain it
-        try:
-            input = self.driver.find_element('xpath', "//input[@id=':re:']") # we get the city from the search input (which is apparently stored within cache) - its different often...
-        except: 
-            input = self.driver.find_element('xpath', "//input[@id=':rg:']") #...as such, we are prepared for all scenarios
-        city = input.get_attribute("value") # as the input xpath leads us to a list of all this elements attributes, we select the value attribute which was autofilled.
+        self.driver.execute_script("window.scrollTo(0, 0);")
+        # button = self.driver.find_element(By.CSS_SELECTOR, "a[href='#blockdisplay4']")  # Adjust selector as needed
+        # button.click()
+        # self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        new_url = f'{response.url}#tab-reviews'
+        self.driver.get(new_url)
+        time.sleep(2)
+        reviews = self.driver.find_elements(By.CSS_SELECTOR, "div.c402354066 div.a53cbfa6de.b5726afd0b > span")
+        print(reviews)
+        pos_rev = []
+        for review in reviews:
+            pos_rev.append(review.text)
+
+
+        # try: 
+        #     input = self.driver.find_element('xpath', '//input[@id=":rh:"]') # we get the city from the search input (which is apparently stored within cache) - its different often...
+        # except: 
+        #     try:
+        #         input = self.driver.find_element('xpath', '//input[@id=":re:"]') # we get the city from the search input (which is apparently stored within cache) - its different often...
+        #     except: 
+        #         input = self.driver.find_element('xpath', '//input[@id=":rg:"]') #...as such, we are prepared for all scenarios
+        # city = input.get_attribute("value") # as the input xpath leads us to a list of all this elements attributes, we select the value attribute which was autofilled.
+
+
     
 
 
@@ -146,7 +165,7 @@ class BookingSpider(scrapy.Spider):
         item = BookingItem()
         item['name'] = name
         item['address'] = address
-        item['city'] = city
+        #item['city'] = city
         item['rating'] = rating
         item['rating1'] = other_ratings[0].text #personell
         item['rating2'] = other_ratings[1].text #amenities
@@ -154,6 +173,7 @@ class BookingSpider(scrapy.Spider):
         item['rating4'] = other_ratings[3].text # cleanliness
         item['rating5'] = other_ratings[4].text #subjective price/quality ratio 
         item['price'] = price
+        item['pos_reviews'] = pos_rev
 
 
         yield item
