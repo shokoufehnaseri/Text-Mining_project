@@ -140,11 +140,18 @@ class BookingSpider(scrapy.Spider):
         new_url = f'{response.url}#tab-reviews'
         self.driver.get(new_url)
         time.sleep(2)
-        reviews = self.driver.find_elements(By.CSS_SELECTOR, "div.c402354066 div.a53cbfa6de.b5726afd0b > span")
-        print(reviews)
+        #reviews = self.driver.find_elements(By.CSS_SELECTOR, "div.c402354066 div.a53cbfa6de.b5726afd0b > span")
+        reviews_p = self.driver.find_elements(By.CSS_SELECTOR, '[data-testid="review-positive-text"]')
+        reviews_n = self.driver.find_elements(By.CSS_SELECTOR, '[data-testid="review-negative-text"]')
+
+        print(reviews_p)
         pos_rev = []
-        for review in reviews:
+        for review in reviews_p:
             pos_rev.append(review.text)
+
+        neg_rev = []
+        for review in reviews_n:
+            neg_rev.append(review.text)
 
 
         # try: 
@@ -174,6 +181,7 @@ class BookingSpider(scrapy.Spider):
         item['rating5'] = other_ratings[4].text #subjective price/quality ratio 
         item['price'] = price
         item['pos_reviews'] = pos_rev
+        item['neg_reviews'] = neg_rev
 
 
         yield item

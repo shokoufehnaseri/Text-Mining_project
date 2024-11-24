@@ -17,3 +17,4 @@ class BookingItem(scrapy.Item):
     rating5 = scrapy.Field()
     price = scrapy.Field()
     pos_reviews = scrapy.Field()
+    neg_reviews = scrapy.Field()
