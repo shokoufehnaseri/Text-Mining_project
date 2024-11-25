@@ -16,6 +16,7 @@ import numpy as np
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait 
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.action_chains import ActionChains
 
 class BookingSpider(scrapy.Spider):
     name = 'booking' #we write this into cmd when we want to start the scraper
@@ -143,8 +144,6 @@ class BookingSpider(scrapy.Spider):
         #reviews = self.driver.find_elements(By.CSS_SELECTOR, "div.c402354066 div.a53cbfa6de.b5726afd0b > span")
         reviews_p = self.driver.find_elements(By.CSS_SELECTOR, '[data-testid="review-positive-text"]')
         reviews_n = self.driver.find_elements(By.CSS_SELECTOR, '[data-testid="review-negative-text"]')
-
-        print(reviews_p)
         pos_rev = []
         for review in reviews_p:
             pos_rev.append(review.text)
@@ -152,6 +151,25 @@ class BookingSpider(scrapy.Spider):
         neg_rev = []
         for review in reviews_n:
             neg_rev.append(review.text)
+
+        nav_bar = self.driver.find_element(By.CLASS_NAME, "ef2dbaeb17")
+        page_buttons = nav_bar.find_elements(By.CLASS_NAME, "a83ed08757")
+        if len(page_buttons) < 5: x = 5 
+        else: x = len(page_buttons)
+        for page_number in range(2, x):  
+            time.sleep(2)
+            page_buttons[page_number].click()
+            time.sleep(2)
+            reviews_p = self.driver.find_elements(By.CSS_SELECTOR, '[data-testid="review-positive-text"]')
+            reviews_n = self.driver.find_elements(By.CSS_SELECTOR, '[data-testid="review-negative-text"]')
+            for review in reviews_p:
+                pos_rev.append(review.text)
+            for review in reviews_n:
+                neg_rev.append(review.text)
+
+
+        print(reviews_p)
+
 
 
         # try: 
